@@ -56,15 +56,15 @@ Try {
 	##* VARIABLE DECLARATION
 	##*===============================================
 	## Variables: Application
-	[string]$appVendor = ''
-	[string]$appName = ''
-	[string]$appVersion = ''
-	[string]$appArch = ''
+	[string]$appVendor = 'GRAPHISOFT'
+	[string]$appName = 'ARCHICAD'
+	[string]$appVersion = '21'
+	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '06/12/2017'
-	[string]$appScriptAuthor = '<author name>'
+	[string]$appScriptDate = '09/26/2017'
+	[string]$appScriptAuthor = 'Jordan Hamilton'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = ''
@@ -112,13 +112,13 @@ Try {
 		[string]$installPhase = 'Pre-Installation'
 
 		## Show Welcome Message, close applications if required, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'iexplore' -CheckDiskSpace -PersistPrompt
+		Show-InstallationWelcome -CloseApps 'archicad' -CheckDiskSpace -PersistPrompt
 
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-
+		Remove-MSIApplications -Name "ARCHICAD"
 
 		##*===============================================
 		##* INSTALLATION
@@ -132,7 +132,8 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-
+		$exitCode = Execute-Process -Path "AC21 USA 3005.exe" -WindowStyle "Hidden" -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 		##*===============================================
 		##* POST-INSTALLATION
@@ -140,9 +141,15 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
+		[scriptblock]$HKCURegistrySettings = {
+		  Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD-64\ARCHICAD-64 21.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD-64\ARCHICAD-64 21.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
+		}
+		Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
+		$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 21\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) {Show-InstallationPrompt -Message "'$appVendor' '$appName' '$appVersion' has been Sucessfully Installed." -ButtonRightText ‘OK’ -Icon Information -NoWait}
+		If (-not $useDefaultMsi) {}
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -152,7 +159,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 
 		## Show Welcome Message, close applications with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
+		Show-InstallationWelcome -CloseApps 'archicad' -CloseAppsCountdown 60
 
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -172,7 +179,7 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-
+		Remove-MSIApplications -Name "ARCHICAD"
 
 		##*===============================================
 		##* POST-UNINSTALLATION
