@@ -123,6 +123,7 @@ Try {
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+				Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
 			}
 		ElseIf (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21"){
 			  Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21\Uninstall.AC\uninstaller.exe" -Parameters '/silent /norestart' -WindowStyle 'Hidden'
@@ -139,7 +140,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-23-USA-3003-1.2.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber xxxxxxxxxx --eduUserID xxxxxxxxxx" -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "ARCHICAD-23-USA-3003-1.2.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber xxxxxxx --eduUserID xxxxxxxx" -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 		##*===============================================
@@ -189,6 +190,7 @@ Try {
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
         Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+				Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
 
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -218,8 +220,8 @@ Catch {
 # SIG # Begin signature block
 # MIIOaQYJKoZIhvcNAQcCoIIOWjCCDlYCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwkLnOuI6Yf83AlmBu+IMqcSt
-# HO+ggguhMIIFrjCCBJagAwIBAgIQBwNx0Q95WkBxmSuUB2Kb4jANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXNhH4GD4guvTmdkxICFMh+Gn
+# NqyggguhMIIFrjCCBJagAwIBAgIQBwNx0Q95WkBxmSuUB2Kb4jANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJVUzELMAkGA1UECBMCTUkxEjAQBgNVBAcTCUFubiBB
 # cmJvcjESMBAGA1UEChMJSW50ZXJuZXQyMREwDwYDVQQLEwhJbkNvbW1vbjElMCMG
 # A1UEAxMcSW5Db21tb24gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0xODA2MjEwMDAw
@@ -286,11 +288,11 @@ Catch {
 # BAsTCEluQ29tbW9uMSUwIwYDVQQDExxJbkNvbW1vbiBSU0EgQ29kZSBTaWduaW5n
 # IENBAhAHA3HRD3laQHGZK5QHYpviMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTR7X3Pj8PFJnA/
-# 1R5RuIpSfsIG5TANBgkqhkiG9w0BAQEFAASCAQDGTHqscuYxYQKB+t1tu4yM4MrJ
-# 0a9etXnAd0KTyshJUW9+LR/BQPCczP+BqeaGdtLQJL9WDic04i+l2X+joGl++dwP
-# 7mDoNpsluy6rDCDYR+t/hdQAvCVvcgw83cxaI3KremNsS99O0/ncrVuHsm7tXVU9
-# IuuHj6CW1fa4Jj35bQes2tV+rZz07sYgnft1NJkAL6C3JtrPlFs8neAbWpDyC/+Y
-# 0WumKjxuUNpefeK6SOmwBJEO0GlnzFHglkym61rE+oXXOaknng3PNKMEqHcl/RcL
-# 2gTqKN8N2PJwRst9FB7NPmlwklLnONuMeDJ7ra3I8IHgjstOLhCz423VCCzV
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSABBFUyxpn8/Jb
+# +qMBzwr6wpWQtDANBgkqhkiG9w0BAQEFAASCAQCV0n8iLw+CP2kpmzR0SJAt++Zd
+# V0UzTDmKc98bJRffIYj7fnmTc8CTCX0fO3Q9eM1x+5tYpZM6uyA8SVoufiKRYhiP
+# 2YoOXcSD2KjZbdIvQva6Nmp7Tdos64b6UllLnIfrMavnzWMSLl/m34IMCUFhfRrf
+# 0rvgqETb2/stlaWb4ena58e5Yc9MZzzRR9rLhHYniuraY8d/JgbXt2S1uQQ/9z/a
+# YLSPuezX3hSANRZYms8tuQvuBANAcWMsiDEArcPv5TUPDh2w4JB6ETvWe4BsodkJ
+# L+MHpBwPNbzcq3OKnfD2WqU3pFR5fRrKF0B6sjnl+l/cly9SmpbfcVa/NwfB
 # SIG # End signature block
