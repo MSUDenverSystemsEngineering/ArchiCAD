@@ -119,8 +119,14 @@ Try {
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-		Remove-MSIApplications -Name "Graphisoft"
-
+		If (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23") {
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+			}
+		ElseIf (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21"){
+			  Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21\Uninstall.AC\uninstaller.exe" -Parameters '/silent /norestart' -WindowStyle 'Hidden'
+		}
 		##*===============================================
 		##* INSTALLATION
 		##*===============================================
@@ -133,7 +139,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-23-USA-3003-1.2.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber XXXXXXXXXX --eduUserID XXXXXXXX" -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "ARCHICAD-23-USA-3003-1.2.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber xxxxxxxxxx --eduUserID xxxxxxxxxx" -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 		##*===============================================
@@ -180,7 +186,9 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-		Remove-MSIApplications -Name "Graphisoft"
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+        Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
 
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -210,8 +218,8 @@ Catch {
 # SIG # Begin signature block
 # MIIOaQYJKoZIhvcNAQcCoIIOWjCCDlYCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAU5m2pEVEUDGzGDKC+81y9fj
-# xwyggguhMIIFrjCCBJagAwIBAgIQBwNx0Q95WkBxmSuUB2Kb4jANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwkLnOuI6Yf83AlmBu+IMqcSt
+# HO+ggguhMIIFrjCCBJagAwIBAgIQBwNx0Q95WkBxmSuUB2Kb4jANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJVUzELMAkGA1UECBMCTUkxEjAQBgNVBAcTCUFubiBB
 # cmJvcjESMBAGA1UEChMJSW50ZXJuZXQyMREwDwYDVQQLEwhJbkNvbW1vbjElMCMG
 # A1UEAxMcSW5Db21tb24gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0xODA2MjEwMDAw
@@ -278,11 +286,11 @@ Catch {
 # BAsTCEluQ29tbW9uMSUwIwYDVQQDExxJbkNvbW1vbiBSU0EgQ29kZSBTaWduaW5n
 # IENBAhAHA3HRD3laQHGZK5QHYpviMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRKVV+rbfmy6e3O
-# f7QJH8O1/rb3ajANBgkqhkiG9w0BAQEFAASCAQBX9hd3WZqzn2tqneURirsTtcJF
-# 3DceQ8T7KYhBb6+eeo/tCnedq9EIHgwlmGpM8t7jcDxnzXBfltIr+/PH7XUMHslC
-# ptfb9redMzVQaZJnMhVUYLQVW7QN3nss5oZw1o1TO/hUpohGfD2ueU/24NZUNqmp
-# eLWTU+0wXK9I+7pL9WgkYJMcgPs+ST21AidXiqvW7JAHa18uOliQBIwvU9d1wNUB
-# woBoxsnMCVoPypgtqbIwAxHAlhORnnvWDtngidFalZlruva1wh4stO8baS75eHa6
-# CgqvvI+59JhLfZtdIB/cmG0QttSGAiMfANCe6/qEdKuci0lB1nGToJjUysS2
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTR7X3Pj8PFJnA/
+# 1R5RuIpSfsIG5TANBgkqhkiG9w0BAQEFAASCAQDGTHqscuYxYQKB+t1tu4yM4MrJ
+# 0a9etXnAd0KTyshJUW9+LR/BQPCczP+BqeaGdtLQJL9WDic04i+l2X+joGl++dwP
+# 7mDoNpsluy6rDCDYR+t/hdQAvCVvcgw83cxaI3KremNsS99O0/ncrVuHsm7tXVU9
+# IuuHj6CW1fa4Jj35bQes2tV+rZz07sYgnft1NJkAL6C3JtrPlFs8neAbWpDyC/+Y
+# 0WumKjxuUNpefeK6SOmwBJEO0GlnzFHglkym61rE+oXXOaknng3PNKMEqHcl/RcL
+# 2gTqKN8N2PJwRst9FB7NPmlwklLnONuMeDJ7ra3I8IHgjstOLhCz423VCCzV
 # SIG # End signature block
