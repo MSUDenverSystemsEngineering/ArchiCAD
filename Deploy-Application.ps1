@@ -150,7 +150,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-24-USA-3008-1.6.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber 00000000 --eduUserID 0000000" -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "ARCHICAD-24-USA-3008-1.6.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber 00000000 --eduUserID 00000000" -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 
@@ -162,9 +162,9 @@ Try {
 		## <Perform Post-Installation tasks here>
 		[scriptblock]$HKCURegistrySettings = {
 			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
-			  Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
-		  }
-		  Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
+			}
+			Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
   
 			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 24\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
 
@@ -209,8 +209,8 @@ Try {
 
 		## <Perform Post-Uninstallation tasks here>
 		Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 24\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-        Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-        Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+		Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+		Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
 				Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
 
 
@@ -248,7 +248,7 @@ Try {
 		## <Perform Post-Repair tasks here>
 
 
-    }
+	}
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================
