@@ -134,7 +134,7 @@ Try {
 					Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
 				}
 			ElseIf (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21"){
-				  Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21\Uninstall.AC\uninstaller.exe" -Parameters '/silent /norestart' -WindowStyle 'Hidden'
+					Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21\Uninstall.AC\uninstaller.exe" -Parameters '/silent /norestart' -WindowStyle 'Hidden'
 			}
 
 
@@ -165,7 +165,7 @@ Try {
 			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
 			}
 			Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
-  
+
 			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 24\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
 
 
