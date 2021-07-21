@@ -67,7 +67,7 @@ Try {
 	## Variables: Application
 	[string]$appVendor = 'GRAPHISOFT'
 	[string]$appName = 'ARCHICAD'
-	[string]$appVersion = '24'
+	[string]$appVersion = '25'
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
@@ -150,7 +150,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-24-USA-3008-1.6.exe" -Parameters "--mode unattended --desktopshortcut 0 --eduSerialNumber 00000000 --eduUserID 00000000" -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "ARCHICAD-25-USA-3002-1.0.exe" -Parameters "--mode unattended --desktopshortcut 0  -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 
@@ -161,12 +161,12 @@ Try {
 
 		## <Perform Post-Installation tasks here>
 		[scriptblock]$HKCURegistrySettings = {
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 24.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
 			}
 			Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
-			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 24\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
+			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 25\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
 
 
 		## Display a message at the end of the install
@@ -208,7 +208,7 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 
 		## <Perform Post-Uninstallation tasks here>
-		Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 24\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
+		Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 25\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
 		Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
 		Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
 				Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
@@ -267,8 +267,8 @@ Catch {
 # SIG # Begin signature block
 # MIIT7gYJKoZIhvcNAQcCoIIT3zCCE9sCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUr9U20ALdragDN+5MOnJZV4iG
-# ZU6gghEmMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpMgQpvrK4DMzSbQX3G/Ba4nZ
+# CJCgghEmMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0B
 # AQwFADB7MQswCQYDVQQGEwJHQjEbMBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHDAdTYWxmb3JkMRowGAYDVQQKDBFDb21vZG8gQ0EgTGltaXRlZDEh
 # MB8GA1UEAwwYQUFBIENlcnRpZmljYXRlIFNlcnZpY2VzMB4XDTE5MDMxMjAwMDAw
@@ -365,11 +365,11 @@ Catch {
 # bW1vbiBSU0EgQ29kZSBTaWduaW5nIENBAhAHA3HRD3laQHGZK5QHYpviMAkGBSsO
 # AwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEM
 # BgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqG
-# SIb3DQEJBDEWBBTzxYg+TDOOsNWO7um6npNeH9ZdEzANBgkqhkiG9w0BAQEFAASC
-# AQCsA2d+ZujK6onzv30q7oulENPYrxzmEopUs27LpeoPz55kLCCt2Qw1Qk8Pb1r8
-# SrzvrT1iK/6kVyCdFJePfCZkINV+Dz6y45gltqARvcFnScyuZSQMSCwtpOqTmaLO
-# oQbJNsDeAOzSDZhUGRCVz/kuIDFRtBT9f5Q8jRdGeFN5ZFerZTKqhHnMpuhFHh4+
-# TwOnhshVUW1qFcZNXlyDaxAQByr/lL8WeQvavoBp65YpwV7v8c2bJvEBz1EtfrdQ
-# WfnednoE1XOMfc2BZ0ZevcPYUAP3PbViZtwzHR1I5R6+/th1kDloLgYxPUcETT+L
-# Ej4Um1H7uKK1mKdG+ENKwvt9
+# SIb3DQEJBDEWBBTbH2n+KP0WeeM2Hro0ZTOPSNPlijANBgkqhkiG9w0BAQEFAASC
+# AQBhrqb3cJokb8hgXzYhnC71vnSViqaz35Pnr5YwyWPn+BiV/xS4KYqKCQqp5EdS
+# ssLq7Vunn93qdAMtU9HdRQqQTkuPKTm3jT5RFn86fB1Z/adYqFFrBcRJlTVtv2ZF
+# PfI8d17XTvLuB0EXA1H/FmUdGJjvfiOIuisfz2TSNcOCKYjdO4biY179dxBJWd5h
+# opj3cVUyL5+6f8BHT8ZGzeXnlJIHx4jB3Fd2UMI6Hf9rEUAPhGaf7GK8mBZ6aAp0
+# KUfy6GFeEreQz7VkFFJ1fLQUuNhsO3p98/LQePd1Sg7/ymnbhxC2DA9asZHczfg1
+# ca0ljt9tOZBwvorzbC3LXjS8
 # SIG # End signature block
