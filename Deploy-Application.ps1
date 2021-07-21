@@ -150,7 +150,7 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-25-USA-3002-1.0.exe" -Parameters "--mode unattended --desktopshortcut 0  -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "ARCHICAD-25-USA-3002-1.0.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 
