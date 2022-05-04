@@ -71,7 +71,7 @@ Try {
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.14'
+	[string]$appScriptVersion = '1.0.15'
 	[string]$appScriptDate = '05/21/2022'
 	[string]$appScriptAuthor = 'Craig Myers'
 	##*===============================================
@@ -234,7 +234,7 @@ Try {
 
 
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
+		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'ArchiCAD has been installed.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -343,8 +343,8 @@ Catch {
 # SIG # Begin signature block
 # MIIU9wYJKoZIhvcNAQcCoIIU6DCCFOQCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUud8ZPDTcsHDFK/l0Sd9YMCb+
-# XySgghHXMIIFbzCCBFegAwIBAgIQSPyTtGBVlI02p8mKidaUFjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+DSrXS0Hh3JcoSesOrt4v2gS
+# OxOgghHXMIIFbzCCBFegAwIBAgIQSPyTtGBVlI02p8mKidaUFjANBgkqhkiG9w0B
 # AQwFADB7MQswCQYDVQQGEwJHQjEbMBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHDAdTYWxmb3JkMRowGAYDVQQKDBFDb21vZG8gQ0EgTGltaXRlZDEh
 # MB8GA1UEAwwYQUFBIENlcnRpZmljYXRlIFNlcnZpY2VzMB4XDTIxMDUyNTAwMDAw
@@ -444,13 +444,13 @@ Catch {
 # ZSBTaWduaW5nIENBIFIzNgIRAKVN33D73PFMVIK48rFyyjEwCQYFKw4DAhoFAKB4
 # MBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQB
 # gjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkE
-# MRYEFO2SmSN+P2zTo+v8FO0jQeaxvFROMA0GCSqGSIb3DQEBAQUABIIBgJUbCpAk
-# 8qn731n0HXar5Ri50PpoTAGOlOodNHRYZ1vA01Xpcw9mHQOQF0/q2KlzbsGkZ+BS
-# Fgr6LK7PYfQwXfSBDvw3nFqLU7yvlWDMZHPbO1xGDYxCjWVdXnPgC1n2AU1C4eQy
-# KzEzpOa+I5Ol2Ng4TiXhhFJrB0FizJaDwyXckQU/gUG7zU24prSMy5GsWuhTMaDS
-# rRCEhDkzlBPUDHDb15YhfbFZwLaqPZgxayrmgcrBvHW7uX/j8cnKc7hlfvXsH+ti
-# hu6B1nwaDjQaZs5eUBvCYJ1dz6cV5Mes/qJm31xcP4IF01i0vLUPwm7Iy0Bhaq1q
-# ru4nD8ipLJhcGRM22qrC/nyUbMkCDcOcLTf3qgZ/YDsdAhZj/J4QMIarXauw8fM9
-# ZQJDcy2TphIQryioysGZpvvRCMgaG3XyjFoxiqqPsvVyOt1wOw9cWzX4XGwXHyog
-# fMuoy8tPL5IcT8WR199RDBxDisREfsdw84IQ41UivZbgRFrnG2w8DDikpg==
+# MRYEFMQDeqw+RkIrAWy98h5UbLiNIiUEMA0GCSqGSIb3DQEBAQUABIIBgAiRR7lO
+# wilVuLFXutAsFsq5RxZFR6HK4yfIbSRvZd9QFwL0CiimRJqxdyfjZL09V88MNXwx
+# Wi8H2r55hbSNkzb+kA6gpooRUlVIaHPmr3I45Jnmlw4IkI2lngE0OS/igW2bpqMB
+# GT6OmpekD59m5KtSJLIChxy7ekZl9fi+Re9rpqeoc3RS1N4Z3O5t7MFjcbyLB/+3
+# cEI/UkLE2ZEMqH6XVS4cWP1I6SdOouwk5SI4z9ls8oaVaWr6NAyZbPzOZ7cxQbgm
+# qO6sa/nZPFnKHB/f3lXCIK+e4xMnx4Gz9c4KMs1p+ZXxDJNCqOP6ks+BW95IcWwc
+# NBiApqkJjx72R381W51CVynreuaLMD8jwEKsyCmFUCiumkmzBB452PnVw/jnwdFc
+# yh2yUT/aMLwDIdEllMe+iylTT6jCTatH/qoycEAnyrJNCY6RyltWejQvVUOk8CEF
+# R8W6DNST33qh9wBaLoTrp2It9pzL4JzVCLOrTKblwfzvHVA0nvU1hz4MAw==
 # SIG # End signature block
