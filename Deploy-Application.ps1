@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 	This script performs the installation or uninstallation of an application(s).
 	# LICENSE #
@@ -65,15 +65,15 @@ Try {
 	##* VARIABLE DECLARATION
 	##*===============================================
 	## Variables: Application
-	[string]$appVendor = 'GRAPHISOFT'
-	[string]$appName = 'ARCHICAD'
+	[string]$appVendor = 'Graphisoft'
+	[string]$appName = 'ArchiCAD'
 	[string]$appVersion = '25'
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
-	[string]$appScriptVersion = '1.0.0'
-	[string]$appScriptDate = '06/21/2021'
-	[string]$appScriptAuthor = 'David Torres'
+	[string]$appScriptVersion = '1.0.14'
+	[string]$appScriptDate = '05/21/2022'
+	[string]$appScriptAuthor = 'Craig Myers'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
 	[string]$installName = ''
@@ -87,8 +87,8 @@ Try {
 
 	## Variables: Script
 	[string]$deployAppScriptFriendlyName = 'Deploy Application'
-	[version]$deployAppScriptVersion = [version]'3.8.3'
-	[string]$deployAppScriptDate = '30/09/2020'
+	[version]$deployAppScriptVersion = [version]'3.8.4'
+	[string]$deployAppScriptDate = '26/01/2021'
 	[hashtable]$deployAppScriptParameters = $psBoundParameters
 
 	## Variables: Environment
@@ -120,22 +120,31 @@ Try {
 		##*===============================================
 		[string]$installPhase = 'Pre-Installation'
 
-		## Show Welcome Message, close Internet Explorer if required, verify there is enough disk space to complete the install, and persist the prompt
-		Show-InstallationWelcome -CloseApps 'archicad' -CheckDiskSpace -PersistPrompt
+		## Show Welcome Message, close Internet Explorer if required, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt
+		Show-InstallationWelcome -CloseApps 'ARCHICAD,ARCHICAD Starter,BIMx,GRAPHISOFT License Manager Tool' -CheckDiskSpace -PersistPrompt
 
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
 
 		## <Perform Pre-Installation tasks here>
-		If (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23") {
-			Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 23\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-			Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-			Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-					Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
+		$applicationList = 'ArchiCAD','BIMx','GRAPHISOFT License Manager Tool'
+		ForEach($installedApplication in $applicationList) {
+			$installStatus = Get-InstalledApplication -Name $installedApplication
+			if($installStatus){
+				$uninstallString = $installStatus.UninstallString
+				Write-Log -Message "Found the following uninstall string: $uninstallString" -Source 'Pre-Installation' -LogType 'CMTrace'
+				if($uninstallString){
+					$uninstallerPath = $uninstallString.Substring(1, $uninstallString.lastIndexOf('.exe')+3)
+					Write-Log -Message "Uninstall string after stripping quotation marks: $uninstallerPath" -Source 'Pre-Installation' -LogType 'CMTrace'
+					$exitCode = Execute-Process -Path $uninstallerPath -Parameters "--mode unattended"  -WindowStyle "Hidden" -PassThru
+					If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 				}
-			ElseIf (Test-Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21"){
-					Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 21\Uninstall.AC\uninstaller.exe" -Parameters '/silent /norestart' -WindowStyle 'Hidden'
+				else{
+					Write-Log -Message "$installedApplication was detected, but an uninstall string could not be found." -Source 'Pre-Installation' -LogType 'CMTrace'
+					Exit-Script -ExitCode 9
+				}
 			}
+		}
 
 
 		##*===============================================
@@ -150,9 +159,12 @@ Try {
 		}
 
 		## <Perform Installation tasks here>
-		$exitCode = Execute-Process -Path "ARCHICAD-25-USA-3002-1.0.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
-		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
+		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-25-USA-4013-1.1.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+		Write-Log -Message "Installing Patch..." -Source 'Installation' -LogType 'CMTrace'
+		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-25-USA-Update-5010-1.1-INTEL.exe" -Parameters "--mode unattended" -WindowStyle "Hidden" -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 
 		##*===============================================
 		##* POST-INSTALLATION
@@ -160,6 +172,58 @@ Try {
 		[string]$installPhase = 'Post-Installation'
 
 		## <Perform Post-Installation tasks here>
+		$postInstallStatus = Get-InstalledApplication -Name 'ArchiCAD'
+		If ($postInstallStatus){
+			## Update the License
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak") {
+				Write-Log -Message "License archive already exists. Deleting existing file..." -Source 'Licensing' -LogType 'CMTrace'
+				Remove-Item -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak" -Force
+			}
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\") {
+				Write-Log -Message "License Path Exists" -Source 'Licensing' -LogType 'CMTrace'
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic") {
+					Write-Log -Message "License file already exists." -Source 'Licensing' -LogType 'CMTrace'
+					Write-Log -Message "Archiving the old license file..." -Source 'Licensing' -LogType 'CMTrace'
+					Rename-Item -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic" -NewName "education.bak"	## We'll use this as a detection method for the deployment so we can make sure the old license was replaced
+					$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"	## Should evaluate false
+					$licenseArchive = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak"	## Should evaluate true
+					If ((!$licenseFile) -and ($licenseArchive)) {
+						Write-Log -Message "Old license successfully archived." -Source 'Licensing' -LogType 'CMTrace'
+					}
+				}
+				$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"	## Should evaluate false
+				If (!$licenseFile) {
+					Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
+					Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_25_USA"
+					If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"){
+						Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
+					}
+					Else {
+						Write-Log -Message "Import failed" -Source 'Licensing' -LogType 'CMTrace'
+					}
+				}
+			}
+			Else {
+				Write-Log -Message "Path not found: $envProgramData\ARCHICAD\AC_25_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				Write-Log -Message "Creating directory: $envProgramData\ARCHICAD\AC_25_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				New-Item -Path "$envProgramData\ARCHICAD\AC_25_USA" -ItemType "directory"
+				Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
+				Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_25_USA"
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"){
+					Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
+				}
+				Else {
+					Write-Log -Message "Import failed" -Source 'Licensing' -LogType 'CMTrace'
+				}
+			}
+		}
+		Else {
+			Write-Log -Message "ArchiCAD does not appear to be installed." -Source 'Licensing' -LogType 'CMTrace'
+		}
+
+		Write-Log -Message "Waiting 5 seconds before proceeding..." -Source 'Licensing' -LogType 'CMTrace'
+		Start-Sleep -s 5
+
 		[scriptblock]$HKCURegistrySettings = {
 			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
 			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
@@ -170,7 +234,7 @@ Try {
 
 
 		## Display a message at the end of the install
-		If (-not $useDefaultMsi) {}
+		If (-not $useDefaultMsi) { Show-InstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -Icon Information -NoWait }
 	}
 	ElseIf ($deploymentType -ieq 'Uninstall')
 	{
@@ -180,7 +244,7 @@ Try {
 		[string]$installPhase = 'Pre-Uninstallation'
 
 		## Show Welcome Message, close Internet Explorer with a 60 second countdown before automatically closing
-		Show-InstallationWelcome -CloseApps 'iexplore' -CloseAppsCountdown 60
+		Show-InstallationWelcome -CloseApps 'ARCHICAD,ARCHICAD Starter,BIMx,GRAPHISOFT License Manager Tool' -CloseAppsCountdown 60
 
 		## Show Progress Message (with the default message)
 		Show-InstallationProgress
@@ -200,7 +264,24 @@ Try {
 		}
 
 		# <Perform Uninstallation tasks here>
-
+		$applicationList = 'ArchiCAD','BIMx','GRAPHISOFT License Manager Tool'
+		ForEach($installedApplication in $applicationList) {
+			$installStatus = Get-InstalledApplication -Name $installedApplication
+			if($installStatus){
+				$uninstallString = $installStatus.UninstallString
+				Write-Log -Message "Found the following uninstall string: $uninstallString" -Source 'Uninstallation' -LogType 'CMTrace'
+				if($uninstallString){
+					$uninstallerPath = $uninstallString.Substring(1, $uninstallString.lastIndexOf('.exe')+3)
+					Write-Log -Message "Uninstall string after stripping quotation marks: $uninstallerPath" -Source 'Uninstallation' -LogType 'CMTrace'
+					$exitCode = Execute-Process -Path $uninstallerPath -Parameters "--mode unattended"  -WindowStyle "Hidden" -PassThru
+					If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
+				}
+				else{
+					Write-Log -Message "$installedApplication was detected, but an uninstall string could not be found." -Source 'Uninstallation' -LogType 'CMTrace'
+					Exit-Script -ExitCode 9
+				}
+			}
+		}
 
 		##*===============================================
 		##* POST-UNINSTALLATION
@@ -208,11 +289,6 @@ Try {
 		[string]$installPhase = 'Post-Uninstallation'
 
 		## <Perform Post-Uninstallation tasks here>
-		Execute-Process -Path "C:\Program Files\GRAPHISOFT\ARCHICAD 25\Uninstall.AC\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-		Execute-Process -Path "C:\Program Files\GRAPHISOFT\BIMx Desktop Viewer\Uninstall.BIMx\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-		Execute-Process -Path "C:\Program Files\GRAPHISOFT\License Manager Tool\Uninstall.LMT\Uninstall.exe" -Parameters '--mode unattended' -WindowStyle 'Hidden'
-				Remove-Item -path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\GRAPHISOFT" -recurse
-
 
 
 	}
@@ -248,7 +324,7 @@ Try {
 		## <Perform Post-Repair tasks here>
 
 
-	}
+    }
 	##*===============================================
 	##* END SCRIPT BODY
 	##*===============================================
@@ -265,111 +341,116 @@ Catch {
 }
 
 # SIG # Begin signature block
-# MIIT7gYJKoZIhvcNAQcCoIIT3zCCE9sCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIIU9wYJKoZIhvcNAQcCoIIU6DCCFOQCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpMgQpvrK4DMzSbQX3G/Ba4nZ
-# CJCgghEmMIIFgTCCBGmgAwIBAgIQOXJEOvkit1HX02wQ3TE1lTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUud8ZPDTcsHDFK/l0Sd9YMCb+
+# XySgghHXMIIFbzCCBFegAwIBAgIQSPyTtGBVlI02p8mKidaUFjANBgkqhkiG9w0B
 # AQwFADB7MQswCQYDVQQGEwJHQjEbMBkGA1UECAwSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHDAdTYWxmb3JkMRowGAYDVQQKDBFDb21vZG8gQ0EgTGltaXRlZDEh
-# MB8GA1UEAwwYQUFBIENlcnRpZmljYXRlIFNlcnZpY2VzMB4XDTE5MDMxMjAwMDAw
-# MFoXDTI4MTIzMTIzNTk1OVowgYgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpOZXcg
-# SmVyc2V5MRQwEgYDVQQHEwtKZXJzZXkgQ2l0eTEeMBwGA1UEChMVVGhlIFVTRVJU
-# UlVTVCBOZXR3b3JrMS4wLAYDVQQDEyVVU0VSVHJ1c3QgUlNBIENlcnRpZmljYXRp
-# b24gQXV0aG9yaXR5MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAgBJl
-# FzYOw9sIs9CsVw127c0n00ytUINh4qogTQktZAnczomfzD2p7PbPwdzx07HWezco
-# EStH2jnGvDoZtF+mvX2do2NCtnbyqTsrkfjib9DsFiCQCT7i6HTJGLSR1GJk23+j
-# BvGIGGqQIjy8/hPwhxR79uQfjtTkUcYRZ0YIUcuGFFQ/vDP+fmyc/xadGL1RjjWm
-# p2bIcmfbIWax1Jt4A8BQOujM8Ny8nkz+rwWWNR9XWrf/zvk9tyy29lTdyOcSOk2u
-# TIq3XJq0tyA9yn8iNK5+O2hmAUTnAU5GU5szYPeUvlM3kHND8zLDU+/bqv50TmnH
-# a4xgk97Exwzf4TKuzJM7UXiVZ4vuPVb+DNBpDxsP8yUmazNt925H+nND5X4OpWax
-# KXwyhGNVicQNwZNUMBkTrNN9N6frXTpsNVzbQdcS2qlJC9/YgIoJk2KOtWbPJYjN
-# hLixP6Q5D9kCnusSTJV882sFqV4Wg8y4Z+LoE53MW4LTTLPtW//e5XOsIzstAL81
-# VXQJSdhJWBp/kjbmUZIO8yZ9HE0XvMnsQybQv0FfQKlERPSZ51eHnlAfV1SoPv10
-# Yy+xUGUJ5lhCLkMaTLTwJUdZ+gQek9QmRkpQgbLevni3/GcV4clXhB4PY9bpYrrW
-# X1Uu6lzGKAgEJTm4Diup8kyXHAc/DVL17e8vgg8CAwEAAaOB8jCB7zAfBgNVHSME
-# GDAWgBSgEQojPpbxB+zirynvgqV/0DCktDAdBgNVHQ4EFgQUU3m/WqorSs9UgOHY
-# m8Cd8rIDZsswDgYDVR0PAQH/BAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wEQYDVR0g
-# BAowCDAGBgRVHSAAMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwuY29tb2Rv
-# Y2EuY29tL0FBQUNlcnRpZmljYXRlU2VydmljZXMuY3JsMDQGCCsGAQUFBwEBBCgw
-# JjAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuY29tb2RvY2EuY29tMA0GCSqGSIb3
-# DQEBDAUAA4IBAQAYh1HcdCE9nIrgJ7cz0C7M7PDmy14R3iJvm3WOnnL+5Nb+qh+c
-# li3vA0p+rvSNb3I8QzvAP+u431yqqcau8vzY7qN7Q/aGNnwU4M309z/+3ri0ivCR
-# lv79Q2R+/czSAaF9ffgZGclCKxO/WIu6pKJmBHaIkU4MiRTOok3JMrO66BQavHHx
-# W/BBC5gACiIDEOUMsfnNkjcZ7Tvx5Dq2+UUTJnWvu6rvP3t3O9LEApE9GQDTF1w5
-# 2z97GA1FzZOFli9d31kWTz9RvdVFGD/tSo7oBmF0Ixa1DVBzJ0RHfxBdiSprhTEU
-# xOipakyAvGp4z7h/jnZymQyd/teRCBaho1+VMIIFrjCCBJagAwIBAgIQBwNx0Q95
-# WkBxmSuUB2Kb4jANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzELMAkGA1UE
-# CBMCTUkxEjAQBgNVBAcTCUFubiBBcmJvcjESMBAGA1UEChMJSW50ZXJuZXQyMREw
-# DwYDVQQLEwhJbkNvbW1vbjElMCMGA1UEAxMcSW5Db21tb24gUlNBIENvZGUgU2ln
-# bmluZyBDQTAeFw0xODA2MjEwMDAwMDBaFw0yMTA2MjAyMzU5NTlaMIG5MQswCQYD
-# VQQGEwJVUzEOMAwGA1UEEQwFODAyMDQxCzAJBgNVBAgMAkNPMQ8wDQYDVQQHDAZE
-# ZW52ZXIxGDAWBgNVBAkMDzEyMDEgNXRoIFN0cmVldDEwMC4GA1UECgwnTWV0cm9w
-# b2xpdGFuIFN0YXRlIFVuaXZlcnNpdHkgb2YgRGVudmVyMTAwLgYDVQQDDCdNZXRy
-# b3BvbGl0YW4gU3RhdGUgVW5pdmVyc2l0eSBvZiBEZW52ZXIwggEiMA0GCSqGSIb3
-# DQEBAQUAA4IBDwAwggEKAoIBAQDLV4koxA42DQSGF7D5xRh8Gar0uZYETUmkI7Ms
-# YC7BiOsiywwqWmMtwgcDdaJ+EJ2MxEKbB1fkyf9yutWb6gMYUegJ8PE41Y2gd5D3
-# bSiYxFJYIlzStJw0cjFWrGcnlwC0eUk0n9UsaDLfByA3dCkwfMoTBOnsxXRc8AeR
-# 3tv48jrMH2LDfp+JNkPVHGlbVoAs1rmt/Wp8Db2uzOBroDzuWZBel5Kxs0R6V3LV
-# fxZOi5qj2OrEZuOZ0nJwtSkNzTf7emQR85gLYG2WuNaOfgLzXZL/U1RektzgxqX9
-# 6ilvJIxbfNiy2HWYtFdO5Z/kvwbQJRlDzr6npuBJGzLWeTNzAgMBAAGjggHsMIIB
-# 6DAfBgNVHSMEGDAWgBSuNSMX//8GPZxQ4IwkZTMecBCIojAdBgNVHQ4EFgQUpemI
-# brz5SKX18ziKvmP5pAxjmw8wDgYDVR0PAQH/BAQDAgeAMAwGA1UdEwEB/wQCMAAw
-# EwYDVR0lBAwwCgYIKwYBBQUHAwMwEQYJYIZIAYb4QgEBBAQDAgQQMGYGA1UdIARf
-# MF0wWwYMKwYBBAGuIwEEAwIBMEswSQYIKwYBBQUHAgEWPWh0dHBzOi8vd3d3Lmlu
-# Y29tbW9uLm9yZy9jZXJ0L3JlcG9zaXRvcnkvY3BzX2NvZGVfc2lnbmluZy5wZGYw
-# SQYDVR0fBEIwQDA+oDygOoY4aHR0cDovL2NybC5pbmNvbW1vbi1yc2Eub3JnL0lu
-# Q29tbW9uUlNBQ29kZVNpZ25pbmdDQS5jcmwwfgYIKwYBBQUHAQEEcjBwMEQGCCsG
-# AQUFBzAChjhodHRwOi8vY3J0LmluY29tbW9uLXJzYS5vcmcvSW5Db21tb25SU0FD
-# b2RlU2lnbmluZ0NBLmNydDAoBggrBgEFBQcwAYYcaHR0cDovL29jc3AuaW5jb21t
-# b24tcnNhLm9yZzAtBgNVHREEJjAkgSJpdHNzeXN0ZW1lbmdpbmVlcmluZ0Btc3Vk
-# ZW52ZXIuZWR1MA0GCSqGSIb3DQEBCwUAA4IBAQCHNj1auwWplgLo8gkDx7Bgg2zN
-# 4tTmOZ67gP3zrWyepib0/VCWOPutYK3By81e6KdctJ0YVeOfU6ynxyjuNrkcmaXZ
-# x2jqAtPNHH4P9BMBSUct22AdL5FT/E3lJL1IW7XD1aHyNT/8IfWU9omFQnqzjgKo
-# r8VqofA7fvKEm40hoTxVsrtOG/FHM2yv/e7l3YCtMzXFwyVIzCq+gm3r3y0C30Ih
-# T4s2no/tn70f42RwL8TvVtq4XejcOoBbNqtz+AhStPsgJBQi5PvcLKfkbEb0ZL3V
-# iafmpzbwCjslXwo+rM+XUDwCGCMi4cvc3t7WlSpvfQ0EGVf8DfwEzw37SxptMIIF
-# 6zCCA9OgAwIBAgIQZeHi49XeUEWF8yYkgAXi1DANBgkqhkiG9w0BAQ0FADCBiDEL
-# MAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0plcnNl
-# eSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNVBAMT
-# JVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTQwOTE5
-# MDAwMDAwWhcNMjQwOTE4MjM1OTU5WjB8MQswCQYDVQQGEwJVUzELMAkGA1UECBMC
-# TUkxEjAQBgNVBAcTCUFubiBBcmJvcjESMBAGA1UEChMJSW50ZXJuZXQyMREwDwYD
-# VQQLEwhJbkNvbW1vbjElMCMGA1UEAxMcSW5Db21tb24gUlNBIENvZGUgU2lnbmlu
-# ZyBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMCgL4seertqdaz4
-# PtyjujkiyvOjduS/fTAn5rrTmDJWI1wGhpcNgOjtooE16wv2Xn6pPmhz/Z3UZ3nO
-# qupotxnbHHY6WYddXpnHobK4qYRzDMyrh0YcasfvOSW+p93aLDVwNh0iLiA73eMc
-# Dj80n+V9/lWAWwZ8gleEVfM4+/IMNqm5XrLFgUcjfRKBoMABKD4D+TiXo60C8gJo
-# /dUBq/XVUU1Q0xciRuVzGOA65Dd3UciefVKKT4DcJrnATMr8UfoQCRF6VypzxOAh
-# KmzCVL0cPoP4W6ks8frbeM/ZiZpto/8Npz9+TFYj1gm+4aUdiwfFv+PfWKrvpK+C
-# ywX4CgkCAwEAAaOCAVowggFWMB8GA1UdIwQYMBaAFFN5v1qqK0rPVIDh2JvAnfKy
-# A2bLMB0GA1UdDgQWBBSuNSMX//8GPZxQ4IwkZTMecBCIojAOBgNVHQ8BAf8EBAMC
-# AYYwEgYDVR0TAQH/BAgwBgEB/wIBADATBgNVHSUEDDAKBggrBgEFBQcDAzARBgNV
-# HSAECjAIMAYGBFUdIAAwUAYDVR0fBEkwRzBFoEOgQYY/aHR0cDovL2NybC51c2Vy
-# dHJ1c3QuY29tL1VTRVJUcnVzdFJTQUNlcnRpZmljYXRpb25BdXRob3JpdHkuY3Js
-# MHYGCCsGAQUFBwEBBGowaDA/BggrBgEFBQcwAoYzaHR0cDovL2NydC51c2VydHJ1
-# c3QuY29tL1VTRVJUcnVzdFJTQUFkZFRydXN0Q0EuY3J0MCUGCCsGAQUFBzABhhlo
-# dHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0GCSqGSIb3DQEBDQUAA4ICAQBGLLZ/
-# ak4lZr2caqaq0J69D65ONfzwOCfBx50EyYI024bhE/fBlo0wRBPSNe1591dck6YS
-# V22reZfBJmTfyVzLwzaibZMjoduqMAJr6rjAhdaSokFsrgw5ZcUfTBAqesReMJx9
-# THLOFnizq0D8vguZFhOYIP+yunPRtVTcC5Jf6aPTkT5Y8SinhYT4Pfk4tycxyMVu
-# y3cpY333HForjRUedfwSRwGSKlA8Ny7K3WFs4IOMdOrYDLzhH9JyE3paRU8albzL
-# SYZzn2W6XV2UOaNU7KcX0xFTkALKdOR1DQl8oc55VS69CWjZDO3nYJOfc5nU20hn
-# TKvGbbrulcq4rzpTEj1pmsuTI78E87jaK28Ab9Ay/u3MmQaezWGaLvg6BndZRWTd
-# I1OSLECoJt/tNKZ5yeu3K3RcH8//G6tzIU4ijlhG9OBU9zmVafo872goR1i0PIGw
-# jkYApWmatR92qiOyXkZFhBBKek7+FgFbK/4uy6F1O9oDm/AgMzxasCOBMXHa8adC
-# ODl2xAh5Q6lOLEyJ6sJTMKH5sXjuLveNfeqiKiUJfvEspJdOlZLajLsfOCMN2UCx
-# 9PCfC2iflg1MnHODo2OtSOxRsQg5G0kH956V3kRZtCAZ/Bolvk0Q5OidlyRS1hLV
-# WZoW6BZQS6FJah1AirtEDoVP/gBDqp2PfI9s0TGCAjIwggIuAgEBMIGQMHwxCzAJ
-# BgNVBAYTAlVTMQswCQYDVQQIEwJNSTESMBAGA1UEBxMJQW5uIEFyYm9yMRIwEAYD
-# VQQKEwlJbnRlcm5ldDIxETAPBgNVBAsTCEluQ29tbW9uMSUwIwYDVQQDExxJbkNv
-# bW1vbiBSU0EgQ29kZSBTaWduaW5nIENBAhAHA3HRD3laQHGZK5QHYpviMAkGBSsO
-# AwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEM
-# BgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqG
-# SIb3DQEJBDEWBBTbH2n+KP0WeeM2Hro0ZTOPSNPlijANBgkqhkiG9w0BAQEFAASC
-# AQBhrqb3cJokb8hgXzYhnC71vnSViqaz35Pnr5YwyWPn+BiV/xS4KYqKCQqp5EdS
-# ssLq7Vunn93qdAMtU9HdRQqQTkuPKTm3jT5RFn86fB1Z/adYqFFrBcRJlTVtv2ZF
-# PfI8d17XTvLuB0EXA1H/FmUdGJjvfiOIuisfz2TSNcOCKYjdO4biY179dxBJWd5h
-# opj3cVUyL5+6f8BHT8ZGzeXnlJIHx4jB3Fd2UMI6Hf9rEUAPhGaf7GK8mBZ6aAp0
-# KUfy6GFeEreQz7VkFFJ1fLQUuNhsO3p98/LQePd1Sg7/ymnbhxC2DA9asZHczfg1
-# ca0ljt9tOZBwvorzbC3LXjS8
+# MB8GA1UEAwwYQUFBIENlcnRpZmljYXRlIFNlcnZpY2VzMB4XDTIxMDUyNTAwMDAw
+# MFoXDTI4MTIzMTIzNTk1OVowVjELMAkGA1UEBhMCR0IxGDAWBgNVBAoTD1NlY3Rp
+# Z28gTGltaXRlZDEtMCsGA1UEAxMkU2VjdGlnbyBQdWJsaWMgQ29kZSBTaWduaW5n
+# IFJvb3QgUjQ2MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAjeeUEiIE
+# JHQu/xYjApKKtq42haxH1CORKz7cfeIxoFFvrISR41KKteKW3tCHYySJiv/vEpM7
+# fbu2ir29BX8nm2tl06UMabG8STma8W1uquSggyfamg0rUOlLW7O4ZDakfko9qXGr
+# YbNzszwLDO/bM1flvjQ345cbXf0fEj2CA3bm+z9m0pQxafptszSswXp43JJQ8mTH
+# qi0Eq8Nq6uAvp6fcbtfo/9ohq0C/ue4NnsbZnpnvxt4fqQx2sycgoda6/YDnAdLv
+# 64IplXCN/7sVz/7RDzaiLk8ykHRGa0c1E3cFM09jLrgt4b9lpwRrGNhx+swI8m2J
+# mRCxrds+LOSqGLDGBwF1Z95t6WNjHjZ/aYm+qkU+blpfj6Fby50whjDoA7NAxg0P
+# OM1nqFOI+rgwZfpvx+cdsYN0aT6sxGg7seZnM5q2COCABUhA7vaCZEao9XOwBpXy
+# bGWfv1VbHJxXGsd4RnxwqpQbghesh+m2yQ6BHEDWFhcp/FycGCvqRfXvvdVnTyhe
+# Be6QTHrnxvTQ/PrNPjJGEyA2igTqt6oHRpwNkzoJZplYXCmjuQymMDg80EY2NXyc
+# uu7D1fkKdvp+BRtAypI16dV60bV/AK6pkKrFfwGcELEW/MxuGNxvYv6mUKe4e7id
+# FT/+IAx1yCJaE5UZkADpGtXChvHjjuxf9OUCAwEAAaOCARIwggEOMB8GA1UdIwQY
+# MBaAFKARCiM+lvEH7OKvKe+CpX/QMKS0MB0GA1UdDgQWBBQy65Ka/zWWSC8oQEJw
+# IDaRXBeF5jAOBgNVHQ8BAf8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zATBgNVHSUE
+# DDAKBggrBgEFBQcDAzAbBgNVHSAEFDASMAYGBFUdIAAwCAYGZ4EMAQQBMEMGA1Ud
+# HwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwuY29tb2RvY2EuY29tL0FBQUNlcnRpZmlj
+# YXRlU2VydmljZXMuY3JsMDQGCCsGAQUFBwEBBCgwJjAkBggrBgEFBQcwAYYYaHR0
+# cDovL29jc3AuY29tb2RvY2EuY29tMA0GCSqGSIb3DQEBDAUAA4IBAQASv6Hvi3Sa
+# mES4aUa1qyQKDKSKZ7g6gb9Fin1SB6iNH04hhTmja14tIIa/ELiueTtTzbT72ES+
+# BtlcY2fUQBaHRIZyKtYyFfUSg8L54V0RQGf2QidyxSPiAjgaTCDi2wH3zUZPJqJ8
+# ZsBRNraJAlTH/Fj7bADu/pimLpWhDFMpH2/YGaZPnvesCepdgsaLr4CnvYFIUoQx
+# 2jLsFeSmTD1sOXPUC4U5IOCFGmjhp0g4qdE2JXfBjRkWxYhMZn0vY86Y6GnfrDyo
+# XZ3JHFuu2PMvdM+4fvbXg50RlmKarkUT2n/cR/vfw1Kf5gZV6Z2M8jpiUbzsJA8p
+# 1FiAhORFe1rYMIIGGjCCBAKgAwIBAgIQYh1tDFIBnjuQeRUgiSEcCjANBgkqhkiG
+# 9w0BAQwFADBWMQswCQYDVQQGEwJHQjEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVk
+# MS0wKwYDVQQDEyRTZWN0aWdvIFB1YmxpYyBDb2RlIFNpZ25pbmcgUm9vdCBSNDYw
+# HhcNMjEwMzIyMDAwMDAwWhcNMzYwMzIxMjM1OTU5WjBUMQswCQYDVQQGEwJHQjEY
+# MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSswKQYDVQQDEyJTZWN0aWdvIFB1Ymxp
+# YyBDb2RlIFNpZ25pbmcgQ0EgUjM2MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIB
+# igKCAYEAmyudU/o1P45gBkNqwM/1f/bIU1MYyM7TbH78WAeVF3llMwsRHgBGRmxD
+# eEDIArCS2VCoVk4Y/8j6stIkmYV5Gej4NgNjVQ4BYoDjGMwdjioXan1hlaGFt4Wk
+# 9vT0k2oWJMJjL9G//N523hAm4jF4UjrW2pvv9+hdPX8tbbAfI3v0VdJiJPFy/7Xw
+# iunD7mBxNtecM6ytIdUlh08T2z7mJEXZD9OWcJkZk5wDuf2q52PN43jc4T9OkoXZ
+# 0arWZVeffvMr/iiIROSCzKoDmWABDRzV/UiQ5vqsaeFaqQdzFf4ed8peNWh1OaZX
+# nYvZQgWx/SXiJDRSAolRzZEZquE6cbcH747FHncs/Kzcn0Ccv2jrOW+LPmnOyB+t
+# AfiWu01TPhCr9VrkxsHC5qFNxaThTG5j4/Kc+ODD2dX/fmBECELcvzUHf9shoFvr
+# n35XGf2RPaNTO2uSZ6n9otv7jElspkfK9qEATHZcodp+R4q2OIypxR//YEb3fkDn
+# 3UayWW9bAgMBAAGjggFkMIIBYDAfBgNVHSMEGDAWgBQy65Ka/zWWSC8oQEJwIDaR
+# XBeF5jAdBgNVHQ4EFgQUDyrLIIcouOxvSK4rVKYpqhekzQwwDgYDVR0PAQH/BAQD
+# AgGGMBIGA1UdEwEB/wQIMAYBAf8CAQAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwGwYD
+# VR0gBBQwEjAGBgRVHSAAMAgGBmeBDAEEATBLBgNVHR8ERDBCMECgPqA8hjpodHRw
+# Oi8vY3JsLnNlY3RpZ28uY29tL1NlY3RpZ29QdWJsaWNDb2RlU2lnbmluZ1Jvb3RS
+# NDYuY3JsMHsGCCsGAQUFBwEBBG8wbTBGBggrBgEFBQcwAoY6aHR0cDovL2NydC5z
+# ZWN0aWdvLmNvbS9TZWN0aWdvUHVibGljQ29kZVNpZ25pbmdSb290UjQ2LnA3YzAj
+# BggrBgEFBQcwAYYXaHR0cDovL29jc3Auc2VjdGlnby5jb20wDQYJKoZIhvcNAQEM
+# BQADggIBAAb/guF3YzZue6EVIJsT/wT+mHVEYcNWlXHRkT+FoetAQLHI1uBy/YXK
+# ZDk8+Y1LoNqHrp22AKMGxQtgCivnDHFyAQ9GXTmlk7MjcgQbDCx6mn7yIawsppWk
+# vfPkKaAQsiqaT9DnMWBHVNIabGqgQSGTrQWo43MOfsPynhbz2Hyxf5XWKZpRvr3d
+# MapandPfYgoZ8iDL2OR3sYztgJrbG6VZ9DoTXFm1g0Rf97Aaen1l4c+w3DC+IkwF
+# kvjFV3jS49ZSc4lShKK6BrPTJYs4NG1DGzmpToTnwoqZ8fAmi2XlZnuchC4NPSZa
+# PATHvNIzt+z1PHo35D/f7j2pO1S8BCysQDHCbM5Mnomnq5aYcKCsdbh0czchOm8b
+# kinLrYrKpii+Tk7pwL7TjRKLXkomm5D1Umds++pip8wH2cQpf93at3VDcOK4N7Ew
+# oIJB0kak6pSzEu4I64U6gZs7tS/dGNSljf2OSSnRr7KWzq03zl8l75jy+hOds9TW
+# SenLbjBQUGR96cFr6lEUfAIEHVC1L68Y1GGxx4/eRI82ut83axHMViw1+sVpbPxg
+# 51Tbnio1lB93079WPFnYaOvfGAA0e0zcfF/M9gXr+korwQTh2Prqooq2bYNMvUoU
+# KD85gnJ+t0smrWrb8dee2CvYZXD5laGtaAxOfy/VKNmwuWuAh9kcMIIGQjCCBKqg
+# AwIBAgIRAKVN33D73PFMVIK48rFyyjEwDQYJKoZIhvcNAQEMBQAwVDELMAkGA1UE
+# BhMCR0IxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRlZDErMCkGA1UEAxMiU2VjdGln
+# byBQdWJsaWMgQ29kZSBTaWduaW5nIENBIFIzNjAeFw0yMTA2MDkwMDAwMDBaFw0y
+# NDA2MDgyMzU5NTlaMIGVMQswCQYDVQQGEwJVUzERMA8GA1UECAwIQ29sb3JhZG8x
+# DzANBgNVBAcMBkRlbnZlcjEwMC4GA1UECgwnTWV0cm9wb2xpdGFuIFN0YXRlIFVu
+# aXZlcnNpdHkgb2YgRGVudmVyMTAwLgYDVQQDDCdNZXRyb3BvbGl0YW4gU3RhdGUg
+# VW5pdmVyc2l0eSBvZiBEZW52ZXIwggGiMA0GCSqGSIb3DQEBAQUAA4IBjwAwggGK
+# AoIBgQCm6Atd6yEc/W5UCNp/h5BikWqPKgINMSLcRjaIRilzk9VGu4Q1hufpdjAa
+# XXW0EHzEjshU/gMorErUXxUW9U1NWkiPEMRydb5DquuAGSlyCrjcUxEL+9USsk4J
+# 483biCOEKgYbCLK1+LzeT2hav8ioyaikrGEIxXo+CsdnzkVzBUR56mgBlu6gMCby
+# nE1As1Z/9YavXYem908Tnd7dcdi9D2s/+GhfiQIZDThfRnNgfIXk6EZZU0DjklHT
+# 898JFt8u7us3CTBIMXp54kz+35N+PIV5azwY8me6oswid8Fh/kEagakoXimTfzpc
+# OmmHaiwJm5fS2d2dP670DJPwA0x7GOYwF8AEY8QJVPoJ8Y/+pMrEuiQxT/tB+wg9
+# 30ZUgTlrHD24N9eM3hjMfHjizfNVlirv+/Ut1h1gH/OLsTZ6dg3Ff/GjbI16GsX3
+# UFlyaerN1dcH+ScsL+58XGYLUufjCcx07/mHN4T1D+14y6WgIpx3/Pq2nusj+zle
+# q9yWd/UCAwEAAaOCAcswggHHMB8GA1UdIwQYMBaAFA8qyyCHKLjsb0iuK1SmKaoX
+# pM0MMB0GA1UdDgQWBBTLXarMi7SgsX53Cweg5K+AM/BXJTAOBgNVHQ8BAf8EBAMC
+# B4AwDAYDVR0TAQH/BAIwADATBgNVHSUEDDAKBggrBgEFBQcDAzARBglghkgBhvhC
+# AQEEBAMCBBAwSgYDVR0gBEMwQTA1BgwrBgEEAbIxAQIBAwIwJTAjBggrBgEFBQcC
+# ARYXaHR0cHM6Ly9zZWN0aWdvLmNvbS9DUFMwCAYGZ4EMAQQBMEkGA1UdHwRCMEAw
+# PqA8oDqGOGh0dHA6Ly9jcmwuc2VjdGlnby5jb20vU2VjdGlnb1B1YmxpY0NvZGVT
+# aWduaW5nQ0FSMzYuY3JsMHkGCCsGAQUFBwEBBG0wazBEBggrBgEFBQcwAoY4aHR0
+# cDovL2NydC5zZWN0aWdvLmNvbS9TZWN0aWdvUHVibGljQ29kZVNpZ25pbmdDQVIz
+# Ni5jcnQwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMC0GA1Ud
+# EQQmMCSBIml0c3N5c3RlbWVuZ2luZWVyaW5nQG1zdWRlbnZlci5lZHUwDQYJKoZI
+# hvcNAQEMBQADggGBAH/FAFHuy+iH7Vk/LuZw8nkpQIBsQc4+A3d8YI0cJLIUh+x+
+# U78k2nZGZQQaKEy9/dCBtV9bryx5jgtt6hiNGMrWCwnzXCqatSY6PFdCXPXtUcBx
+# h/8+ud3CeE7AmGHRk4LcM9SdTmRx1XjMK9Kest4O7dBEUbgQpatb54sVESclkcIO
+# 5pUowa4kab9gCmPMcEgdyTHAxffmLEWAkoYofoS3D6eGMoJGh45VYXOSv4irKEtY
+# +wk+Km41ZdO+wplcrDvCjA0kwEzHzmmBZ4GsRbz3znKjcQrvJ9SDCBZzJ3aIlnv0
+# rd7Q3cIEnUEKgcWduCmWRg6mvY/o5b3DuwL4k9ufPonL2Ym154FATNWk3j7zJ1vd
+# bkyZcMpefCtVtgg511abPE2VDF0KvLg/WJ+FQNTAzZHzeZnhwVJpoiPGTBwa9ra8
+# zPeFPxKUwlSvh7kpTgdKE1QtPbTKq3KCt1CVzXTXPo/iCh3pPnc1HMIuFYJiRvnY
+# K4Elz1T3NrNPgL038zGCAoowggKGAgEBMGkwVDELMAkGA1UEBhMCR0IxGDAWBgNV
+# BAoTD1NlY3RpZ28gTGltaXRlZDErMCkGA1UEAxMiU2VjdGlnbyBQdWJsaWMgQ29k
+# ZSBTaWduaW5nIENBIFIzNgIRAKVN33D73PFMVIK48rFyyjEwCQYFKw4DAhoFAKB4
+# MBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQB
+# gjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkE
+# MRYEFO2SmSN+P2zTo+v8FO0jQeaxvFROMA0GCSqGSIb3DQEBAQUABIIBgJUbCpAk
+# 8qn731n0HXar5Ri50PpoTAGOlOodNHRYZ1vA01Xpcw9mHQOQF0/q2KlzbsGkZ+BS
+# Fgr6LK7PYfQwXfSBDvw3nFqLU7yvlWDMZHPbO1xGDYxCjWVdXnPgC1n2AU1C4eQy
+# KzEzpOa+I5Ol2Ng4TiXhhFJrB0FizJaDwyXckQU/gUG7zU24prSMy5GsWuhTMaDS
+# rRCEhDkzlBPUDHDb15YhfbFZwLaqPZgxayrmgcrBvHW7uX/j8cnKc7hlfvXsH+ti
+# hu6B1nwaDjQaZs5eUBvCYJ1dz6cV5Mes/qJm31xcP4IF01i0vLUPwm7Iy0Bhaq1q
+# ru4nD8ipLJhcGRM22qrC/nyUbMkCDcOcLTf3qgZ/YDsdAhZj/J4QMIarXauw8fM9
+# ZQJDcy2TphIQryioysGZpvvRCMgaG3XyjFoxiqqPsvVyOt1wOw9cWzX4XGwXHyog
+# fMuoy8tPL5IcT8WR199RDBxDisREfsdw84IQ41UivZbgRFrnG2w8DDikpg==
 # SIG # End signature block
