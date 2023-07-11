@@ -67,12 +67,12 @@ Try {
 	## Variables: Application
 	[string]$appVendor = 'Graphisoft'
 	[string]$appName = 'ArchiCAD'
-	[string]$appVersion = '25'
+	[string]$appVersion = '26'
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.15'
-	[string]$appScriptDate = '04/11/2023'
+	[string]$appScriptDate = '07/10/2023'
 	[string]$appScriptAuthor = 'Will Jarvill'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -160,12 +160,8 @@ Try {
 
 		## <Perform Installation tasks here>
 
-		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-25-USA-4013-1.1.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
-		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
-		Write-Log -Message "Installing Patch..." -Source 'Installation' -LogType 'CMTrace'
-		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-25-USA-Update-6000-1.0.exe" -Parameters "--mode unattended" -WindowStyle "Hidden" -PassThru
-		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
-
+		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-26-USA-3001-1.1.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
+		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }	
 		##*===============================================
 		##* POST-INSTALLATION
 		##*===============================================
@@ -175,27 +171,27 @@ Try {
 		$postInstallStatus = Get-InstalledApplication -Name 'ArchiCAD'
 		If ($postInstallStatus){
 			## Update the License
-			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak") {
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak") {
 				Write-Log -Message "License archive already exists. Deleting existing file..." -Source 'Licensing' -LogType 'CMTrace'
-				Remove-Item -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak" -Force
+				Remove-Item -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak" -Force
 			}
-			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\") {
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\") {
 				Write-Log -Message "License Path Exists" -Source 'Licensing' -LogType 'CMTrace'
-				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic") {
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic") {
 					Write-Log -Message "License file already exists." -Source 'Licensing' -LogType 'CMTrace'
 					Write-Log -Message "Archiving the old license file..." -Source 'Licensing' -LogType 'CMTrace'
-					Rename-Item -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic" -NewName "education.bak"	## We'll use this as a detection method for the deployment so we can make sure the old license was replaced
-					$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"	## Should evaluate false
-					$licenseArchive = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.bak"	## Should evaluate true
+					Rename-Item -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic" -NewName "education.bak"	## We'll use this as a detection method for the deployment so we can make sure the old license was replaced
+					$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"	## Should evaluate false
+					$licenseArchive = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak"	## Should evaluate true
 					If ((!$licenseFile) -and ($licenseArchive)) {
 						Write-Log -Message "Old license successfully archived." -Source 'Licensing' -LogType 'CMTrace'
 					}
 				}
-				$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"	## Should evaluate false
+				$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"	## Should evaluate false
 				If (!$licenseFile) {
 					Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
-					Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_25_USA"
-					If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"){
+					Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_26_USA"
+					If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"){
 						Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
 					}
 					Else {
@@ -204,12 +200,12 @@ Try {
 				}
 			}
 			Else {
-				Write-Log -Message "Path not found: $envProgramData\ARCHICAD\AC_25_USA\" -Source 'Licensing' -LogType 'CMTrace'
-				Write-Log -Message "Creating directory: $envProgramData\ARCHICAD\AC_25_USA\" -Source 'Licensing' -LogType 'CMTrace'
-				New-Item -Path "$envProgramData\ARCHICAD\AC_25_USA" -ItemType "directory"
+				Write-Log -Message "Path not found: $envProgramData\ARCHICAD\AC_26_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				Write-Log -Message "Creating directory: $envProgramData\ARCHICAD\AC_26_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				New-Item -Path "$envProgramData\ARCHICAD\AC_26_USA" -ItemType "directory"
 				Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
 				Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_25_USA"
-				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_25_USA\education.lic"){
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"){
 					Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
 				}
 				Else {
@@ -225,8 +221,8 @@ Try {
 		Start-Sleep -s 5
 
 		[scriptblock]$HKCURegistrySettings = {
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 25.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 26.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 26.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
 			}
 			Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
@@ -341,10 +337,10 @@ Catch {
 }
 
 # SIG # Begin signature block
-# MIImVgYJKoZIhvcNAQcCoIImRzCCJkMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# MIImVAYJKoZIhvcNAQcCoIImRTCCJkECAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDbrzZ3xWQ9W4ns
-# MUQDoYewz7xDhhf7CyghbxLC1IzP/qCCH8EwggVvMIIEV6ADAgECAhBI/JO0YFWU
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDnfw02IRyI9JAl
+# fzHMSK5mApBfhu8BzEuAJhgN8WWfJKCCH8AwggVvMIIEV6ADAgECAhBI/JO0YFWU
 # jTanyYqJ1pQWMA0GCSqGSIb3DQEBDAUAMHsxCzAJBgNVBAYTAkdCMRswGQYDVQQI
 # DBJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcMB1NhbGZvcmQxGjAYBgNVBAoM
 # EUNvbW9kbyBDQSBMaW1pdGVkMSEwHwYDVQQDDBhBQUEgQ2VydGlmaWNhdGUgU2Vy
@@ -476,74 +472,74 @@ Catch {
 # 8NDT/LKzH7aZlib0PHmLXGTMze4nmuWgwAxyh8FuTVrTHurwROYybxzrF06Uw3hl
 # IDsPQaof6aFBnf6xuKBlKjTg3qj5PObBMLvAoGMs/FwWAKjQxH/qEZ0eBsambTJd
 # tDgJK0kHqv3sMNrxpy/Pt/360KOE2See+wFmd7lWEOEgbsausfm2usg1XTN2jvF8
-# IAwqd661ogKGuinutFoAsYyr4/kKyVRd1LlqdJ69SK6YMIIG9jCCBN6gAwIBAgIR
-# AJA5f5rSSjoT8r2RXwg4qUMwDQYJKoZIhvcNAQEMBQAwfTELMAkGA1UEBhMCR0Ix
-# GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
-# MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
-# aW1lIFN0YW1waW5nIENBMB4XDTIyMDUxMTAwMDAwMFoXDTMzMDgxMDIzNTk1OVow
-# ajELMAkGA1UEBhMCR0IxEzARBgNVBAgTCk1hbmNoZXN0ZXIxGDAWBgNVBAoTD1Nl
-# Y3RpZ28gTGltaXRlZDEsMCoGA1UEAwwjU2VjdGlnbyBSU0EgVGltZSBTdGFtcGlu
-# ZyBTaWduZXIgIzMwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCQsnE/
-# eeHUuYoXzMOXwpCUcu1aOm8BQ39zWiifJHygNUAG+pSvCqGDthPkSxUGXmqKIDRx
-# e7slrT9bCqQfL2x9LmFR0IxZNz6mXfEeXYC22B9g480Saogfxv4Yy5NDVnrHzgPW
-# AGQoViKxSxnS8JbJRB85XZywlu1aSY1+cuRDa3/JoD9sSq3VAE+9CriDxb2YLAd2
-# AXBF3sPwQmnq/ybMA0QfFijhanS2nEX6tjrOlNEfvYxlqv38wzzoDZw4ZtX8fR6b
-# WYyRWkJXVVAWDUt0cu6gKjH8JgI0+WQbWf3jOtTouEEpdAE/DeATdysRPPs9zdDn
-# 4ZdbVfcqA23VzWLazpwe/OpwfeZ9S2jOWilh06BcJbOlJ2ijWP31LWvKX2THaygM
-# 2qx4Qd6S7w/F7KvfLW8aVFFsM7ONWWDn3+gXIqN5QWLP/Hvzktqu4DxPD1rMbt8f
-# vCKvtzgQmjSnC//+HV6k8+4WOCs/rHaUQZ1kHfqA/QDh/vg61MNeu2lNcpnl8TIt
-# UfphrU3qJo5t/KlImD7yRg1psbdu9AXbQQXGGMBQ5Pit/qxjYUeRvEa1RlNsxfTh
-# hieThDlsdeAdDHpZiy7L9GQsQkf0VFiFN+XHaafSJYuWv8at4L2xN/cf30J7qusc
-# 6es9Wt340pDVSZo6HYMaV38cAcLOHH3M+5YVxQIDAQABo4IBgjCCAX4wHwYDVR0j
-# BBgwFoAUGqH4YRkgD8NBd0UojtE1XwYSBFUwHQYDVR0OBBYEFCUuaDxrmiskFKkf
-# ot8mOs8UpvHgMA4GA1UdDwEB/wQEAwIGwDAMBgNVHRMBAf8EAjAAMBYGA1UdJQEB
-# /wQMMAoGCCsGAQUFBwMIMEoGA1UdIARDMEEwNQYMKwYBBAGyMQECAQMIMCUwIwYI
-# KwYBBQUHAgEWF2h0dHBzOi8vc2VjdGlnby5jb20vQ1BTMAgGBmeBDAEEAjBEBgNV
-# HR8EPTA7MDmgN6A1hjNodHRwOi8vY3JsLnNlY3RpZ28uY29tL1NlY3RpZ29SU0FU
-# aW1lU3RhbXBpbmdDQS5jcmwwdAYIKwYBBQUHAQEEaDBmMD8GCCsGAQUFBzAChjNo
-# dHRwOi8vY3J0LnNlY3RpZ28uY29tL1NlY3RpZ29SU0FUaW1lU3RhbXBpbmdDQS5j
-# cnQwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMA0GCSqGSIb3
-# DQEBDAUAA4ICAQBz2u1ocsvCuUChMbu0A6MtFHsk57RbFX2o6f2t0ZINfD02oGnZ
-# 85ow2qxp1nRXJD9+DzzZ9cN5JWwm6I1ok87xd4k5f6gEBdo0wxTqnwhUq//EfpZs
-# K9OU67Rs4EVNLLL3OztatcH714l1bZhycvb3Byjz07LQ6xm+FSx4781FoADk+AR2
-# u1fFkL53VJB0ngtPTcSqE4+XrwE1K8ubEXjp8vmJBDxO44ISYuu0RAx1QcIPNLiI
-# ncgi8RNq2xgvbnitxAW06IQIkwf5fYP+aJg05Hflsc6MlGzbA20oBUd+my7wZPvb
-# pAMxEHwa+zwZgNELcLlVX0e+OWTOt9ojVDLjRrIy2NIphskVXYCVrwL7tNEunTh8
-# NeAPHO0bR0icImpVgtnyughlA+XxKfNIigkBTKZ58qK2GpmU65co4b59G6F87VaA
-# pvQiM5DkhFP8KvrAp5eo6rWNes7k4EuhM6sLdqDVaRa3jma/X/ofxKh/p6FIFJEN
-# gvy9TZntyeZsNv53Q5m4aS18YS/to7BJ/lu+aSSR/5P8V2mSS9kFP22GctOi0MBk
-# 0jpCwRoD+9DtmiG4P6+mslFU1UzFyh8SjVfGOe1c/+yfJnatZGZn6Kow4NKtt32x
-# akEnbgOKo3TgigmCbr/j9re8ngspGGiBoZw/bhZZSxQJCZrmrr9gFd2G9TGCBesw
-# ggXnAgEBMGkwVDELMAkGA1UEBhMCR0IxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRl
-# ZDErMCkGA1UEAxMiU2VjdGlnbyBQdWJsaWMgQ29kZSBTaWduaW5nIENBIFIzNgIR
-# AKVN33D73PFMVIK48rFyyjEwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
-# DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQguIMHQBMFn9LV
-# hb5Gir0sDma1mHK19KEnAlDG/KunquIwDQYJKoZIhvcNAQEBBQAEggGAfv8pPcRT
-# gbnXKR9rxTcyX32r+I5XMjx/48yfb/r9Af0LwvKJtUYSV5Ld5sYdKS4uJ9CAX3MU
-# 94CEPekKKXE7yglrNAj94rodZ8Xjn7RlqABB8M64mfvVN1soESf09r41oYYUIm68
-# hqQl2XEU3Pc87YhtK85j3olkQFjjlypAcmwkcHjUSTj+pJ1zZN1/959u2G5Jt/FQ
-# dKKdfDZxENygz7C54Ry7T1IXASr3p5N4Bds8/wJJqKqBRINc+Z9aHKchRWFxUPfR
-# WPNI2TU310p0SeaI6Af3Kk2OTDLshBAaBZEc/cxkIda1cQllevz4fTax/dACNm7r
-# Ba2SN9ypRNsasLLd9NST7t44rG8czRDjFuOo9uJwsHzscH4kHQh4oVDp/fVeXqr2
-# VHTH2byjKfDMBcuJqIkfEphey69FPnCnIkJNm72fUIl3Itv7qSDalbyQCU//v/rT
-# p0iymNkXcs/bAkcdR9GeS1rdMvruHg0T7wdkDty/gn8i/uuIAspSXO5ioYIDTDCC
-# A0gGCSqGSIb3DQEJBjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYD
-# VQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNV
-# BAoTD1NlY3RpZ28gTGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBT
-# dGFtcGluZyBDQQIRAJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAY
-# BgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzA0MTEx
-# OTUwMTlaMD8GCSqGSIb3DQEJBDEyBDCTvWNfJ6Rwp+s9n4Aao+KJQisClS4bKRl0
-# K5MfHOcvqxgkUyDStaFn5E7kJdZjHjIwDQYJKoZIhvcNAQEBBQAEggIAMPgE6kvG
-# EoNdsB+PCV6wJNzcmj0D+h7Z0NKBBzx3pTQdbQ8iUbwvF467WM7qXF71HpJAY/8M
-# tQDL7Xn9ytUDYcRUxRBA6CfaCmEZjyaLMfejf+Yd42rXZynrbBvYGPJgG7Zao1O9
-# 515Y5BuDWF4bIpBgSHAG0K8NcVjYLOiY+1hJ9o05wullQBkm8pdmxbr8xnxFRu8i
-# CPMm3DX4/JZyaqs2A3kXk5NqmsrSLZjZ+DLcEmGEoPpc/nawtWeKKcBtEMmktnrc
-# WJvz9PC9Y4tb0nQF9XpTkThaSdfvdFzQulHh+BdLuF6qKMZzYPCRbvOdsxwC1qDd
-# ZCyIleSHHoVJFkVm0sNfgCtydCbXthLgI1Mw8PNT3uRpgx7Uu3sJD34ZNoKaI2vr
-# 8ol1UGDGzfP28GuY2lVM5sCNQ0E57tpE2CxirzPb0qZQVV1urg+DEWQ9JKjdDkqM
-# K2VS1B40XEAqJukNIXwPWMq6jBWD9ktHgy9K2a8ukpBM9+LrSIHoaPvenvEHyjSK
-# CCoyoRNhT42XOwn+THOhFgcqT6uwh+vlpKhuF/sSJbwrYi7p8+PX5LKNb8EKAqqX
-# rPR4SsuNYuCDHPrjJDml9cTFr+VA3fsihG5ZohWnhihVBrjNUCM9JY1uVCrqUoe6
-# DPPHP7L7daAzfmSPiRR0M3rosEit/OxcTUk=
+# IAwqd661ogKGuinutFoAsYyr4/kKyVRd1LlqdJ69SK6YMIIG9TCCBN2gAwIBAgIQ
+# OUwl4XygbSeoZeI72R0i1DANBgkqhkiG9w0BAQwFADB9MQswCQYDVQQGEwJHQjEb
+# MBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRgw
+# FgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJTAjBgNVBAMTHFNlY3RpZ28gUlNBIFRp
+# bWUgU3RhbXBpbmcgQ0EwHhcNMjMwNTAzMDAwMDAwWhcNMzQwODAyMjM1OTU5WjBq
+# MQswCQYDVQQGEwJHQjETMBEGA1UECBMKTWFuY2hlc3RlcjEYMBYGA1UEChMPU2Vj
+# dGlnbyBMaW1pdGVkMSwwKgYDVQQDDCNTZWN0aWdvIFJTQSBUaW1lIFN0YW1waW5n
+# IFNpZ25lciAjNDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAKSTKFJL
+# zyeHdqQpHJk4wOcO1NEc7GjLAWTkis13sHFlgryf/Iu7u5WY+yURjlqICWYRFFiy
+# uiJb5vYy8V0twHqiDuDgVmTtoeWBIHIgZEFsx8MI+vN9Xe8hmsJ+1yzDuhGYHvzT
+# IAhCs1+/f4hYMqsws9iMepZKGRNcrPznq+kcFi6wsDiVSs+FUKtnAyWhuzjpD2+p
+# WpqRKBM1uR/zPeEkyGuxmegN77tN5T2MVAOR0Pwtz1UzOHoJHAfRIuBjhqe+/dKD
+# cxIUm5pMCUa9NLzhS1B7cuBb/Rm7HzxqGXtuuy1EKr48TMysigSTxleGoHM2K4GX
+# +hubfoiH2FJ5if5udzfXu1Cf+hglTxPyXnypsSBaKaujQod34PRMAkjdWKVTpqOg
+# 7RmWZRUpxe0zMCXmloOBmvZgZpBYB4DNQnWs+7SR0MXdAUBqtqgQ7vaNereeda/T
+# pUsYoQyfV7BeJUeRdM11EtGcb+ReDZvsdSbu/tP1ki9ShejaRFEqoswAyodmQ6Mb
+# AO+itZadYq0nC/IbSsnDlEI3iCCEqIeuw7ojcnv4VO/4ayewhfWnQ4XYKzl021p3
+# AtGk+vXNnD3MH65R0Hts2B0tEUJTcXTC5TWqLVIS2SXP8NPQkUMS1zJ9mGzjd0HI
+# /x8kVO9urcY+VXvxXIc6ZPFgSwVP77kv7AkTAgMBAAGjggGCMIIBfjAfBgNVHSME
+# GDAWgBQaofhhGSAPw0F3RSiO0TVfBhIEVTAdBgNVHQ4EFgQUAw8xyJEqk71j89Fd
+# TaQ0D9KVARgwDgYDVR0PAQH/BAQDAgbAMAwGA1UdEwEB/wQCMAAwFgYDVR0lAQH/
+# BAwwCgYIKwYBBQUHAwgwSgYDVR0gBEMwQTA1BgwrBgEEAbIxAQIBAwgwJTAjBggr
+# BgEFBQcCARYXaHR0cHM6Ly9zZWN0aWdvLmNvbS9DUFMwCAYGZ4EMAQQCMEQGA1Ud
+# HwQ9MDswOaA3oDWGM2h0dHA6Ly9jcmwuc2VjdGlnby5jb20vU2VjdGlnb1JTQVRp
+# bWVTdGFtcGluZ0NBLmNybDB0BggrBgEFBQcBAQRoMGYwPwYIKwYBBQUHMAKGM2h0
+# dHA6Ly9jcnQuc2VjdGlnby5jb20vU2VjdGlnb1JTQVRpbWVTdGFtcGluZ0NBLmNy
+# dDAjBggrBgEFBQcwAYYXaHR0cDovL29jc3Auc2VjdGlnby5jb20wDQYJKoZIhvcN
+# AQEMBQADggIBAEybZVj64HnP7xXDMm3eM5Hrd1ji673LSjx13n6UbcMixwSV32Vp
+# YRMM9gye9YkgXsGHxwMkysel8Cbf+PgxZQ3g621RV6aMhFIIRhwqwt7y2opF8773
+# 9i7Efu347Wi/elZI6WHlmjl3vL66kWSIdf9dhRY0J9Ipy//tLdr/vpMM7G2iDczD
+# 8W69IZEaIwBSrZfUYngqhHmo1z2sIY9wwyR5OpfxDaOjW1PYqwC6WPs1gE9fKHFs
+# GV7Cg3KQruDG2PKZ++q0kmV8B3w1RB2tWBhrYvvebMQKqWzTIUZw3C+NdUwjwkHQ
+# epY7w0vdzZImdHZcN6CaJJ5OX07Tjw/lE09ZRGVLQ2TPSPhnZ7lNv8wNsTow0KE9
+# SK16ZeTs3+AB8LMqSjmswaT5qX010DJAoLEZKhghssh9BXEaSyc2quCYHIN158d+
+# S4RDzUP7kJd2KhKsQMFwW5kKQPqAbZRhe8huuchnZyRcUI0BIN4H9wHU+C4RzZ2D
+# 5fjKJRxEPSflsIZHKgsbhHZ9e2hPjbf3E7TtoC3ucw/ZELqdmSx813UfjxDElOZ+
+# JOWVSoiMJ9aFZh35rmR2kehI/shVCu0pwx/eOKbAFPsyPfipg2I2yMO+AIccq/pK
+# QhyJA9z1XHxw2V14Tu6fXiDmCWp8KwijSPUV/ARP380hHHrl9Y4a1LlAMYIF6jCC
+# BeYCAQEwaTBUMQswCQYDVQQGEwJHQjEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVk
+# MSswKQYDVQQDEyJTZWN0aWdvIFB1YmxpYyBDb2RlIFNpZ25pbmcgQ0EgUjM2AhEA
+# pU3fcPvc8UxUgrjysXLKMTANBglghkgBZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEM
+# MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJBDEiBCBLwWL/BRxihXK8
+# Ij5dlD/2FVa2oLDRHEFTj8X0Wpk7KDANBgkqhkiG9w0BAQEFAASCAYCIKpVmMb7O
+# NdjU/WnCNsnxgE57h8tDayoColw0pSy8MbElv4sJDnHbVTL4uMnghHjh2yEavl7n
+# xGQ09IfPVSMRClGSWIcGDH6+14sM/tlXVNVrmil5377xt+0+hWbG/6ZeXjAoGAPA
+# hKxYHy7sBtWF6XG1nAWXrtYENlmlATK00oCOKqamOvKERtvcjSkfJ/HvUdvCHI6H
+# aJK/+PCsot6cz5aeIye3YJJ7QjWNCUaEHgkwE2WrkrOSjupsviWNKd4P8QkvC9WT
+# 9Gm4gTSDhuPW0104woeHGech131+H2vRrV02Kec9D3/Px3uzyYp2RKqlpF8goSXR
+# P4oDUl/Fa0qzbVH3NhGZ7+XnHp9k8lte6jiJ7YkUpByr2rGnI2E0rT7bVtm6ZJAD
+# yE9UYYi8vHiysA/FJi/MYx+D0TKUIcvUySp6pcIzWOjsvzG2TpuM31FgJyv/LKa+
+# DNQQ+6WJYkx/GZ07KHUfkciAoDxnsrRrSjk3qxOPgxfpJd4LxEfKhKehggNLMIID
+# RwYJKoZIhvcNAQkGMYIDODCCAzQCAQEwgZEwfTELMAkGA1UEBhMCR0IxGzAZBgNV
+# BAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEYMBYGA1UE
+# ChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBUaW1lIFN0
+# YW1waW5nIENBAhA5TCXhfKBtJ6hl4jvZHSLUMA0GCWCGSAFlAwQCAgUAoHkwGAYJ
+# KoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjMwNzExMTYx
+# NTM0WjA/BgkqhkiG9w0BCQQxMgQwk3/MhL5bRfFP1kmoxnp0/kfWMEUd8mPKm5dE
+# kodi+c1LgeHWVDrI98EDq6AQ8yH8MA0GCSqGSIb3DQEBAQUABIICAGx6Z9uKRLGV
+# IPGOtg1v/IY7XX2bi+y004k9W1i7o6r6e5UybcXiILPiin4obL+i1zwncVUhSeoF
+# 1iB9e204j2Y+oeBN8p8Nofd2hDHpIDFWT9bkoEYlbo3ryJ+bWW7AhNiaE/rPgHkK
+# i8P//r8jota/6bglfx/DzfhPLVeLmwre30kqtNe6WUrcCLpH884WonXQuRWawGSs
+# HjLb+MvPx/cTVVhRIbndV5RAdF9oEYXeRq8HeT0HzeSqSoDn9vIqRxdGfU78EEQf
+# fiXL6D5NU1pZnf8/FMz6kWWW/a3ja7Xx5Pmf0yl5VWdsQ6mreoMXzMJkW22rRJ4n
+# 8sGM4cI9vUBO7iiVmCoF5TPSAJd8EADSwj3KzerdhYW+XrmFWlEU/qHtj1z9xgrk
+# 0mQTUpQn4cE7GJ9Fi8bC66K6zV4kvx2fZgibecgJQH9+0+sz2pBWnaa2KjCSBFcX
+# yW52Fk706VNShfPtv7CkCy6gCibCswwBS0N5g6fD+NmJHv63eWY9PgLIc9NsXFRU
+# Bt/MKuLpp+qeDDxYHl7JD3SE06zovp/5bhG8b+DYqIiK+NTNsF00rS0w1SYs3dXc
+# bb1DwvbAn9b68A8dILnl2hKd+kyzgzqL2QMIKNdnKYJvfCqCTaFJmM3z1B/bOqZq
+# uJVh0OcozxObhuYSqFEoxhp/I8weJHxy
 # SIG # End signature block
