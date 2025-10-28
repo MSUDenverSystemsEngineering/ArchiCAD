@@ -67,12 +67,12 @@ Try {
 	## Variables: Application
 	[string]$appVendor = 'Graphisoft'
 	[string]$appName = 'ArchiCAD'
-	[string]$appVersion = '26'
+	[string]$appVersion = '28'
 	[string]$appArch = 'x64'
 	[string]$appLang = 'EN'
 	[string]$appRevision = '01'
 	[string]$appScriptVersion = '1.0.15'
-	[string]$appScriptDate = '07/10/2023'
+	[string]$appScriptDate = '05/19/2025'
 	[string]$appScriptAuthor = 'Will Jarvill'
 	##*===============================================
 	## Variables: Install Titles (Only set here to override defaults set by the toolkit)
@@ -160,7 +160,7 @@ Try {
 
 		## <Perform Installation tasks here>
 
-		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-26-USA-3001-1.1.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
+		$exitCode = Execute-Process -Path "$dirFiles\ARCHICAD-28.0.0-USA.exe" -Parameters "--mode unattended --desktopshortcut 0"  -WindowStyle "Hidden" -PassThru
 		If (($exitCode.ExitCode -ne "0") -and ($mainExitCode -ne "3010")) { $mainExitCode = $exitCode.ExitCode }
 		##*===============================================
 		##* POST-INSTALLATION
@@ -171,27 +171,27 @@ Try {
 		$postInstallStatus = Get-InstalledApplication -Name 'ArchiCAD'
 		If ($postInstallStatus){
 			## Update the License
-			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak") {
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.bak") {
 				Write-Log -Message "License archive already exists. Deleting existing file..." -Source 'Licensing' -LogType 'CMTrace'
-				Remove-Item -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak" -Force
+				Remove-Item -Path "$envProgramData\ARCHICAD\AC_28_USA\education.bak" -Force
 			}
-			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\") {
+			If (Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\") {
 				Write-Log -Message "License Path Exists" -Source 'Licensing' -LogType 'CMTrace'
-				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic") {
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic") {
 					Write-Log -Message "License file already exists." -Source 'Licensing' -LogType 'CMTrace'
 					Write-Log -Message "Archiving the old license file..." -Source 'Licensing' -LogType 'CMTrace'
-					Rename-Item -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic" -NewName "education.bak"	## We'll use this as a detection method for the deployment so we can make sure the old license was replaced
-					$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"	## Should evaluate false
-					$licenseArchive = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.bak"	## Should evaluate true
+					Rename-Item -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic" -NewName "education.bak"	## We'll use this as a detection method for the deployment so we can make sure the old license was replaced
+					$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic"	## Should evaluate false
+					$licenseArchive = Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.bak"	## Should evaluate true
 					If ((!$licenseFile) -and ($licenseArchive)) {
 						Write-Log -Message "Old license successfully archived." -Source 'Licensing' -LogType 'CMTrace'
 					}
 				}
-				$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"	## Should evaluate false
+				$licenseFile = Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic"	## Should evaluate false
 				If (!$licenseFile) {
 					Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
-					Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_26_USA"
-					If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"){
+					Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_28_USA"
+					If (Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic"){
 						Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
 					}
 					Else {
@@ -200,12 +200,12 @@ Try {
 				}
 			}
 			Else {
-				Write-Log -Message "Path not found: $envProgramData\ARCHICAD\AC_26_USA\" -Source 'Licensing' -LogType 'CMTrace'
-				Write-Log -Message "Creating directory: $envProgramData\ARCHICAD\AC_26_USA\" -Source 'Licensing' -LogType 'CMTrace'
-				New-Item -Path "$envProgramData\ARCHICAD\AC_26_USA" -ItemType "directory"
+				Write-Log -Message "Path not found: $envProgramData\ARCHICAD\AC_28_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				Write-Log -Message "Creating directory: $envProgramData\ARCHICAD\AC_28_USA\" -Source 'Licensing' -LogType 'CMTrace'
+				New-Item -Path "$envProgramData\ARCHICAD\AC_28_USA" -ItemType "directory"
 				Write-Log -Message "Importing the new license file..." -Source 'Licensing' -LogType 'CMTrace'
-				Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_26_USA"
-				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_26_USA\education.lic"){
+				Copy-Item "$dirSupportFiles\education.lic" -Destination "$envProgramData\ARCHICAD\AC_28_USA"
+				If (Test-Path -Path "$envProgramData\ARCHICAD\AC_28_USA\education.lic"){
 					Write-Log -Message "Import successful" -Source 'Licensing' -LogType 'CMTrace'
 				}
 				Else {
@@ -221,12 +221,12 @@ Try {
 		Start-Sleep -s 5
 
 		[scriptblock]$HKCURegistrySettings = {
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 26.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
-			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 26.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 28.0.0 USA R1' -Name 'CustomerInvolvementChecked' -Value 1 -Type DWord -SID $UserProfile.SID
+			Set-RegistryKey -Key 'HKCU\Software\GRAPHISOFT\ARCHICAD\ARCHICAD 28.0.0 USA R1' -Name 'UsageLogger' -Value 0 -Type DWord -SID $UserProfile.SID
 			}
 			Invoke-HKCURegistrySettingsForAllUsers -RegistrySettings $HKCURegistrySettings
 
-			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 25\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
+			$exitCode = Execute-Process -Path "$envSystem32Directory\netsh.exe" -Parameters "advfirewall firewall add rule name=`"ARCHICAD`" dir=in action=allow program=`"${envProgramFiles}\GRAPHISOFT\ARCHICAD 28\ARCHICAD.exe`" enable=yes" -Windows "Hidden" -WaitForMsiExec -PassThru
 
 
 		## Display a message at the end of the install

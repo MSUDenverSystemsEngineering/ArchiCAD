@@ -44,4 +44,5 @@ SupportFiles/
 # Ignores .zip files
 *.zip
 
-
+# Ignores .intunewin files
+*.intunewin
